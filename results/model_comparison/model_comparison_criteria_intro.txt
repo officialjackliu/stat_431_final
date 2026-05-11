@@ -1,0 +1,5 @@
+Besides test RMSE and MAE, we report DIC, WAIC, and LOO from training data only, using JAGS posterior draws rather than the test set. DIC combines mean deviance with penalty p_D; WAIC and LOO penalize complexity (lower WAIC or looic, higher elpd_loo). We compare baseline and alternative beta priors, N(0,4) versus N(0,1); methodology in Section 4, values in Section 5.
+
+--- LaTeX version (for report) ---
+
+Besides test RMSE and MAE, we report DIC, WAIC, and LOO from training data only, using JAGS posterior draws rather than the test set. DIC combines mean deviance with penalty $p_D$; WAIC and LOO penalize complexity (lower WAIC or looic, higher elpd\_loo). We compare baseline and alternative $\beta$ priors, $\mathcal{N}(0,4)$ versus $\mathcal{N}(0,1)$; methodology in Section~4, values in Section~5.

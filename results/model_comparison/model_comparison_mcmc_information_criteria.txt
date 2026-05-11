@@ -1,0 +1,21 @@
+=== Section 4 — bridge (place after MCSE / convergence paragraph, before Figure 1) ===
+
+Because the chains mixed well and posterior summaries were stable, we used the same training likelihood and saved JAGS draws to summarize in-sample predictive fit with DIC, WAIC, and LOO (Section 5 tables). Details below.
+
+=== Section 4 — condensed (50–60 words; paste into report) ===
+
+Using the same training likelihood and converged JAGS draws, we summarized in-sample predictive fit with DIC from dic.samples, plus WAIC and LOO from an R-built S-by-n log-likelihood matrix of centered log price. A sensitivity refit changed only beta priors, N(0,4) versus N(0,1); scores differed negligibly, so reported posteriors and test predictions use the baseline model.
+
+=== LaTeX version (condensed) ===
+
+Using the same training likelihood and converged JAGS draws, we summarized in-sample predictive fit with DIC from \texttt{dic.samples}, plus WAIC and LOO from an $S\times n$ log-likelihood matrix built in R for centered log price. A sensitivity refit changed only $\beta$ priors, $\mathcal{N}(0,4)$ versus $\mathcal{N}(0,1)$; scores differed negligibly, so reported posteriors and test predictions use the baseline model.
+
+=== Analysis (for authors; not necessarily in report) ===
+
+Placement: Keep chain settings, monitored parameters, Gelman-Rubin, ESS, and MCSE as the core of Section 4. Add one bridge sentence, then the condensed IC paragraph, then Figure 1 (trace plots). That order reads as: sampler worked -> draws support comparison -> visual check.
+
+Computation (matches stat431_final_report_0506.Rmd): DIC from dic.samples on the compiled JAGS model (2000 iterations, thin 5). WAIC and LOO from build_log_lik() on posterior draws (not loglik[i] in JAGS): for each draw s and training observation i, log p(y_i | alpha, beta, sigma) under the hierarchical normal mean. Training n = 3,143; test set not used for these scores.
+
+Prior comparison: Only beta_k prior changed—baseline dnorm(0, 0.25) i.e. N(0, 2^2) vs alternative dnorm(0, 1) i.e. N(0, 1^2). Same likelihood, mu_alpha, sigma, sigma_alpha priors, jags_data, and MCMC design. Alternative outputs: used_car_jags_samples_prior_alt.rds and second dic.samples.
+
+Effect on scores (rounded CSVs): DIC ~1.1967 for both; mean deviance ~1.181; p_D ~0.0157. WAIC ~3759.7 baseline vs ~3759.2 alternative. LOO elpd_loo ~-1880.0 vs ~-1879.7; loo_compare elpd_diff ~0.25 (SE ~0.19) favoring alternative—far below 2*SE, so not meaningful. Conclusion: ICs do not overturn baseline choice; Section 5 tables/figures document side-by-side; main inference stays baseline.

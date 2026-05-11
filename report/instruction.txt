@@ -1,0 +1,37 @@
+Option 1:
+Perform a complete and non-trivial Bayesian hierarchical model analysis of an interesting real data set, using Markov chain Monte Carlo, or
+
+Written Report
+Your report must be typeset on letter-size paper in at least 11 point font, with at least one inch margins on all sides. One-and-a-half line spacing (50% leading) is recommended. The main text portion (excluding figures and appendices) should not exceed 10 pages. Please check for spelling and grammar.
+
+If you chose analysis of a data set (Option 1), it must be real data that is not from any textbooks or from software tutorials or manuals. The source of your data should be clearly documented (typically with a complete reference). Your report should carefully explain the purpose for collecting and/or analyzing the data, the meanings and extents of the variables, how the data were collected, and any implications these considerations have for analysis. Your analysis should include a complete and accurate mathematical specification of your model, explanation of all computational details (initialization, number of chains, convergence diagnostics, Monte Carlo error), and a complete explanation of your final results and findings, using Bayesian inference techniques. Prior assessment and comparison with other (possibly frequentist) methods are optional, but desirable. Any important computer code (for exampƒle, JAGS or R) that you used should be carefully documented and included as an appendix.
+
+If you chose a special topic (Option 2), you must report on existing, formally published methodology (in traditionally published books or peer-reviewed publications), not original research. Your report should clearly describe the topic in your own words and illustrate it with examples (analytical or computational). Mathematical definitions and specifications of key concepts and examples are important. Your report should include a list of references to publications or books that you consulted, and appropriate in-text citations to those works. (A well-documented and non-trivial example, using real or simulated data, is welcome, provided it is not from any textbooks.)
+
+Regard the audience of your report to be your classmates. In particular, assume only knowledge at the level of the course, and not any knowledge specific to your data or topic.
+
+Your report must also include (possibly in appendices):
+
+A short section that summarizes the responsibilities and contributions of each member of your group.
+A short section that properly documents and attributes any AI generated contributions. Even if no AI was used, include the section and briefly state this.
+Any use of generative AI tools is subject to the guidelines of the syllabus.
+
+Your report may be checked for plagiarism.
+
+Grading
+The Final Project determines 20% of your final composite score in the class. One-fifth of this (4% overall) is for timely submission of a complete written proposal.
+
+These categories will be used in grading your Written Report:
+
+Exposition and Readability (5 points)
+Focus and Balance (5 points)
+Structure, Organization, and Wholeness (5 points)
+Depth and Elaboration (5 points)
+Technical Clarity, Detail, and Justification (5 points)
+Correctness and Appropriateness (5 points)
+Adherence to Guidelines:
+Page limit and formatting (2 points)
+References and citations (2 points)
+Contributions and acknowledgment sections (2 points)
+Spelling and grammar (2 points)
+Addressing Special Issues (identified in the instructor’s review of your proposal) (2 points)

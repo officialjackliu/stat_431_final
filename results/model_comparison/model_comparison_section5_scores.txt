@@ -1,0 +1,16 @@
+=== Where to paste (Section 5) ===
+
+1. After Table 1 (test RMSE/MAE: OLS vs Bayesian hierarchical) and your paragraph that OLS slightly wins on the test set.
+2. Insert Tables/Figures 2–5 (or one combined table): model_comparison_dic, model_comparison_waic, model_comparison_loo, model_comparison_loo_compare (PNG/JPG or CSV).
+3. Paste the condensed paragraph below immediately after those tables/figures.
+4. Then continue with your existing paragraph on 95% posterior predictive interval coverage (~94.5%) and actual-vs-predicted plots.
+
+Note: DIC/WAIC/LOO are training-data scores; Table 1 is hold-out test performance. State both in Section 5; do not treat ICs as replacing test RMSE/MAE.
+
+=== Condensed score comparison (50–60 words) ===
+
+Training-only DIC (~1.1967), WAIC (~3759), and LOOIC (~3760) matched closely for baseline and alternative beta priors; loo_compare favored the tighter prior by only 0.25 elpd (SE 0.19). In-sample criteria therefore do not prefer one beta prior strongly and do not change the test-set ranking, where OLS still gave lower RMSE and MAE.
+
+=== LaTeX version ===
+
+Training-only DIC ($\approx 1.1967$), WAIC ($\approx 3759$), and LOOIC ($\approx 3760$) matched closely for baseline and alternative $\beta$ priors; \texttt{loo\_compare} favored the tighter prior by only $0.25$ elpd (SE $0.19$). In-sample criteria therefore do not prefer one $\beta$ prior strongly and do not change the test-set ranking, where OLS still gave lower RMSE and MAE.

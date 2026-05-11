@@ -1,0 +1,3 @@
+model,elpd_loo,se_elpd,looic,p_loo
+baseline_beta_N02,-1880.1,50.359,3760.2,47.259
+alternative_beta_N01,-1879.9,50.342,3759.9,47.017

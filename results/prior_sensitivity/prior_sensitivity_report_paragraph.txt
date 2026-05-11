@@ -1,0 +1,5 @@
+We refit replacing beta_k ~ N(0, 2^2) by beta_k ~ N(0, 1^2), priors on mu_alpha, sigma, and sigma_alpha unchanged (prior_sensitivity_posterior_compare.csv; prior_sensitivity_test_metrics.csv). Means for sigma and sigma_alpha shift O(10^-4); early beta_k and mu_alpha by at most ~0.01; test RMSE/MAE under one percent—inference is likelihood-driven. We retain N(0, 2^2) on beta and estimate by MCMC below.
+
+--- LaTeX version (for report) ---
+
+We refit replacing $\beta_k \sim \mathcal{N}(0,2^2)$ by $\beta_k \sim \mathcal{N}(0,1^2)$, priors on $\mu_\alpha,\sigma,\sigma_\alpha$ unchanged (\texttt{prior\_sensitivity\_posterior\_compare.csv}; \texttt{prior\_sensitivity\_test\_metrics.csv}). Means for $\sigma,\sigma_\alpha$ shift $\mathcal{O}(10^{-4})$; early $\beta_k$ and $\mu_\alpha$ by at most $\sim 0.01$; test RMSE/MAE under one percent—inference is likelihood-driven. We retain $\mathcal{N}(0,2^2)$ on $\boldsymbol{\beta}$ and estimate by MCMC below.

@@ -1,0 +1,19 @@
+
+model {
+  for (i in 1:n) {
+    y[i] ~ dnorm(mu[i], tau)
+    mu[i] <- alpha[brand_id[i]] + inprod(X[i,], beta[])
+  }
+  for (k in 1:p) {
+    beta[k] ~ dnorm(0, 1)
+  }
+  for (j in 1:J) {
+    alpha[j] ~ dnorm(mu_alpha, tau_alpha)
+  }
+  mu_alpha ~ dnorm(0, 0.04)
+  sigma ~ dnorm(0, 0.25) T(0,)
+  sigma_alpha ~ dnorm(0, 0.25) T(0,)
+  tau <- 1 / (sigma * sigma)
+  tau_alpha <- 1 / (sigma_alpha * sigma_alpha)
+}
+
