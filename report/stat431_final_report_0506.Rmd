@@ -12,15 +12,8 @@ library(tidyverse)
 ```
 
 ```{r}
-# ============================================================
 # Data cleaning for Bayesian hierarchical used-car price model
-# ============================================================
-# Goal:
-#   Prepare used_cars.csv for a Bayesian hierarchical prediction model:
-#   response: log(price)
-#   fixed predictors: age, log(mileage), fuel type, transmission,
-#                     accident history, clean title
-#   hierarchical grouping variable: brand
+
 
 library(tidyverse)
 
@@ -56,9 +49,7 @@ for (subdir in c(
   dir.create(p(subdir), recursive = TRUE, showWarnings = FALSE)
 }
 
-# -----------------------------
 # 1. Read raw data
-# -----------------------------
 
 INPUT_PATH <- p("data/raw/used_cars.csv")
 
@@ -84,9 +75,7 @@ missing_before <- car_raw %>%
 cat("\nMissing values before cleaning:\n")
 print(missing_before)
 
-# -----------------------------
 # 2. Parse numeric variables
-# -----------------------------
 
 car_parsed <- car_raw %>%
   mutate(
@@ -102,9 +91,7 @@ car_parsed <- car_raw %>%
     clean_title = str_squish(as.character(clean_title))
   )
 
-# -----------------------------
 # 3. Remove impossible or extreme rows
-# -----------------------------
 # price <= 200000 removes very high-end exotic listings.
 # If you want to keep exotic cars, set USE_MAINSTREAM_FILTER <- FALSE.
 
@@ -139,9 +126,7 @@ print(nrow(car_filtered))
 cat("Rows removed from raw data:\n")
 print(nrow(car_raw) - nrow(car_filtered))
 
-# -----------------------------
 # 4. Feature engineering
-# -----------------------------
 
 REFERENCE_YEAR <- max(car_filtered$model_year_num, na.rm = TRUE)
 
@@ -155,9 +140,7 @@ car_features <- car_filtered %>%
 cat("\nReference year used to define vehicle age:\n")
 print(REFERENCE_YEAR)
 
-# -----------------------------
 # 5. Recode categorical variables
-# -----------------------------
 
 car_recode <- car_features %>%
   mutate(
@@ -190,11 +173,8 @@ car_recode <- car_features %>%
     )
   )
 
-# -----------------------------
 # 6. Collapse rare brands
-# -----------------------------
-# Keep brands with at least 20 listings.
-# Combine smaller brands into "Other".
+
 
 BRAND_MIN_N <- 20
 
@@ -219,9 +199,7 @@ print(n_distinct(car_model$brand_group))
 cat("\nBrand counts after combining rare brands:\n")
 print(car_model %>% count(brand_group, sort = TRUE))
 
-# -----------------------------
 # 7. Keep final modeling variables
-# -----------------------------
 
 car_model <- car_model %>%
   select(
@@ -273,10 +251,7 @@ level_summary <- tibble(
 cat("\nLevel summary table:\n")
 print(level_summary)
 
-# -----------------------------
 # 8. Train/test split
-# -----------------------------
-# Stratified by brand_group so each brand group appears in both train and test.
 
 set.seed(431)
 
@@ -299,9 +274,7 @@ cat("\nTraining and testing sample sizes:\n")
 cat("Train n =", nrow(train_data), "\n")
 cat("Test n  =", nrow(test_data), "\n")
 
-# -----------------------------
 # 9. Standardize continuous variables
-# -----------------------------
 # Important: compute mean/sd from training data only.
 
 age_mean <- mean(train_data$age)
@@ -332,9 +305,7 @@ scaling_info <- tibble(
 cat("\nScaling constants:\n")
 print(scaling_info)
 
-# -----------------------------
 # 10. Prepare model matrix and brand indices for JAGS
-# -----------------------------
 
 brand_levels <- levels(train_data$brand_group)
 J <- length(brand_levels)
@@ -377,9 +348,7 @@ cat("n =", jags_data$n, "\n")
 cat("p =", jags_data$p, "\n")
 cat("J =", jags_data$J, "\n")
 
-# -----------------------------
 # 11. Save cleaned outputs
-# -----------------------------
 
 write_csv(car_model, p("data/processed/used_cars_cleaned_all.csv"))
 write_csv(train_data, p("data/processed/used_cars_train_cleaned.csv"))
@@ -409,23 +378,27 @@ cat("- used_cars_level_summary.csv\n")
 cat("- used_cars_scaling_info.csv\n")
 cat("- used_cars_model_inputs.rds\n")
 
-# -----------------------------
 # 12. EDA summary figure (Section 2)
-# -----------------------------
 
 library(patchwork)
 
-top_brand_groups <- car_model %>%
+eda_data <- read_csv(
+  p("data/processed/used_cars_cleaned_all.csv"),
+  show_col_types = FALSE
+)
+
+top_brand_groups <- eda_data %>%
   count(brand_group, sort = TRUE) %>%
   slice_head(n = 10) %>%
-  pull(brand_group)
+  pull(brand_group) %>%
+  as.character()
 
-eda_brands <- car_model %>%
+eda_brands <- eda_data %>%
   filter(brand_group %in% c(top_brand_groups, "Other")) %>%
   count(brand_group, sort = TRUE) %>%
   mutate(brand_group = fct_reorder(brand_group, n, .desc = TRUE))
 
-p_log_price <- ggplot(car_model, aes(x = log_price)) +
+p_log_price <- ggplot(eda_data, aes(x = log_price)) +
   geom_histogram(bins = 30, fill = "steelblue", color = "white", alpha = 0.85) +
   labs(
     x = "log(price)",
@@ -434,7 +407,7 @@ p_log_price <- ggplot(car_model, aes(x = log_price)) +
   ) +
   theme_minimal(base_size = 11)
 
-eda_predictors <- car_model %>%
+eda_predictors <- eda_data %>%
   select(age, log_mileage) %>%
   pivot_longer(everything(), names_to = "variable", values_to = "value") %>%
   mutate(
@@ -482,9 +455,7 @@ cat("\nSaved EDA figure:\n")
 cat("- used_cars_eda_summary.pdf\n")
 cat("- used_cars_eda_summary.png\n")
 
-# -----------------------------
 # 13. Final checks
-# -----------------------------
 
 cat("\nFinal checks:\n")
 cat("Any missing values in final model data? ", any(is.na(car_model)), "\n")
@@ -497,18 +468,16 @@ cat("Number of fixed-effect columns in X_test:", ncol(X_test), "\n")
 ```
 
 ```{r}
-# ============================================================
+
 # Bayesian Hierarchical Model for Used Car Price Prediction
 # Step 2: Fit model using JAGS
-# ============================================================
+
 
 library(tidyverse)
 library(rjags)
 library(coda)
 
-# -----------------------------
 # 1. Load cleaned model inputs
-# -----------------------------
 
 inputs <- readRDS(p("data/processed/used_cars_model_inputs.rds"))
 
@@ -525,9 +494,7 @@ cat("Testing observations:", nrow(test_data), "\n")
 cat("Number of fixed-effect predictors p:", jags_data$p, "\n")
 cat("Number of brand groups J:", jags_data$J, "\n")
 
-# -----------------------------
 # 2. Write JAGS model file
-# -----------------------------
 
 model_string <- "
 model {
@@ -569,9 +536,7 @@ model {
 
 writeLines(model_string, con = p("models/jags/used_car_hier_model.txt"))
 
-# -----------------------------
 # 3. Initial values
-# -----------------------------
 
 set.seed(431)
 
@@ -585,9 +550,7 @@ init_function <- function() {
   )
 }
 
-# -----------------------------
 # 4. Create and adapt JAGS model
-# -----------------------------
 
 n_chains <- 3
 
@@ -599,15 +562,11 @@ jags_model <- jags.model(
   n.adapt = 1000
 )
 
-# -----------------------------
 # 5. Burn-in
-# -----------------------------
 
 update(jags_model, n.iter = 5000)
 
-# -----------------------------
 # 6. Draw posterior samples
-# -----------------------------
 
 params_to_monitor <- c(
   "beta",
@@ -624,26 +583,20 @@ samples <- coda.samples(
   thin = 5
 )
 
-# -----------------------------
 # 6b. DIC (requires compiled jags_model in memory)
-# -----------------------------
 dic_baseline <- dic.samples(jags_model, n.iter = 2000, thin = 5)
 cat("\nDIC (baseline hierarchical model, training data):\n")
 print(dic_baseline)
 saveRDS(dic_baseline, p("results/mcmc/used_car_dic_baseline.rds"))
 
-# -----------------------------
 # 7. Posterior summary
-# -----------------------------
 
 summary_samples <- summary(samples)
 
 cat("\nPosterior summary:\n")
 print(summary_samples)
 
-# -----------------------------
 # 8. Convergence diagnostics
-# -----------------------------
 
 cat("\nGelman-Rubin diagnostics:\n")
 gelman_results <- gelman.diag(samples, multivariate = FALSE)
@@ -653,9 +606,7 @@ cat("\nEffective sample sizes:\n")
 ess_results <- effectiveSize(samples)
 print(ess_results)
 
-# -----------------------------
 # 8b. Monte Carlo standard errors (baseline model)
-# -----------------------------
 # Key estimands: residual scale (sigma), brand-level spread (sigma_alpha),
 # overall brand intercept (mu_alpha), and first fixed-effect betas.
 mcse_targets <- c(
@@ -686,25 +637,19 @@ print(mcse_summary)
 
 write_csv(mcse_summary, p("results/mcmc/mcmc_mcse_summary.csv"))
 
-# -----------------------------
 # 9. Trace plots
-# -----------------------------
 
-# Trace plots for main variance/hyperparameters
 pdf(p("results/mcmc/traceplots_main_parameters.pdf"), width = 10, height = 8)
 traceplot(samples[, c("mu_alpha", "sigma", "sigma_alpha")])
 dev.off()
 
-# Trace plots for first few beta coefficients
 beta_names <- paste0("beta[", 1:min(6, jags_data$p), "]")
 
 pdf(p("results/mcmc/traceplots_beta_parameters.pdf"), width = 10, height = 8)
 traceplot(samples[, beta_names])
 dev.off()
 
-# -----------------------------
 # 10. Save model outputs
-# -----------------------------
 
 saveRDS(samples, p("results/mcmc/used_car_jags_samples.rds"))
 saveRDS(gelman_results, p("results/mcmc/used_car_gelman_results.rds"))
@@ -726,13 +671,8 @@ cat("- traceplots_beta_parameters.pdf\n")
 ```
 
 ```{r prior-sensitivity-alt-fit, eval=TRUE}
-# ============================================================
+
 # Prior sensitivity: alternative fit (tighter beta prior only)
-# ============================================================
-# Baseline: beta[k] ~ dnorm(0, 0.25)  => variance 4, SD = 2 (JAGS uses precision).
-# Alternative: beta[k] ~ dnorm(0, 1) => variance 1, SD = 1 (more shrinkage toward 0).
-# Same likelihood, same alpha/sigma priors, same jags_data — only pi(beta) changes.
-# Use printed tables / CSV outputs for the report text (replace any draft placeholders).
 
 library(tidyverse)
 library(rjags)
@@ -799,7 +739,6 @@ saveRDS(dic_alt, p("results/prior_sensitivity/used_car_dic_prior_alt.rds"))
 
 saveRDS(samples_alt, p("results/prior_sensitivity/used_car_jags_samples_prior_alt.rds"))
 
-# --- Compare key posteriors: baseline vs alternative ---
 m_base <- as.matrix(readRDS(p("results/mcmc/used_car_jags_samples.rds")))
 m_alt <- as.matrix(samples_alt)
 
@@ -833,7 +772,6 @@ print(prior_sens_compare)
 
 write_csv(prior_sens_compare, p("results/prior_sensitivity/prior_sensitivity_posterior_compare.csv"))
 
-# --- Test RMSE / MAE under alternative (same test set, same prediction code as Step 3) ---
 test_data_ps <- inputs_ps$test_data
 X_test_ps <- inputs_ps$X_test
 scaling_info_ps <- inputs_ps$scaling_info
@@ -869,7 +807,6 @@ mae_ps <- function(a, p) mean(abs(a - p))
 bayes_rmse_alt <- rmse_ps(actual_ps, bayes_pred_price_alt)
 bayes_mae_alt <- mae_ps(actual_ps, bayes_pred_price_alt)
 
-# Reload baseline test metrics from same procedure (recompute from baseline samples for fair side-by-side)
 beta_base <- m_base[, beta_cols_ps, drop = FALSE]
 alpha_base <- m_base[, alpha_cols_ps, drop = FALSE]
 sigma_base_vec <- m_base[, "sigma"]
@@ -898,12 +835,9 @@ write_csv(pred_metric_compare, p("results/prior_sensitivity/prior_sensitivity_te
 ```
 
 ```{r information-criteria-waic-loo, eval=TRUE}
-# ============================================================
-# WAIC / LOO-CV from pointwise log-likelihood (training data only)
-# ============================================================
-# log_lik[s, i] = log p(y_i | theta^(s)) under the hierarchical normal model.
-# Built in R from posterior draws (avoids monitoring n loglik nodes in JAGS).
-# Compare baseline vs alternative prior on beta; DIC computed in JAGS chunks above.
+
+# WAIC / LOO-CV from pointwise log-likelihood 
+
 
 library(tidyverse)
 library(loo)
@@ -963,7 +897,6 @@ saveRDS(loo_alt, p("results/model_comparison/used_car_loo_prior_alt.rds"))
 saveRDS(waic_base, p("results/model_comparison/used_car_waic_baseline.rds"))
 saveRDS(waic_alt, p("results/model_comparison/used_car_waic_prior_alt.rds"))
 
-# --- Flat tables for the report ---
 dic_b <- readRDS(p("results/mcmc/used_car_dic_baseline.rds"))
 dic_a <- readRDS(p("results/prior_sensitivity/used_car_dic_prior_alt.rds"))
 
@@ -1006,16 +939,14 @@ print(gelman_results)
 ```
 
 ```{r}
-# ============================================================
+
 # Step 3: Posterior prediction and OLS comparison
-# ============================================================
+
 
 library(tidyverse)
 library(coda)
 
-# -----------------------------
 # 1. Load saved objects
-# -----------------------------
 
 inputs <- readRDS(p("data/processed/used_cars_model_inputs.rds"))
 samples <- readRDS(p("results/mcmc/used_car_jags_samples.rds"))
@@ -1036,39 +967,31 @@ sample_matrix <- as.matrix(samples)
 cat("Number of posterior draws:", nrow(sample_matrix), "\n")
 cat("Number of test observations:", nrow(test_data), "\n")
 
-# -----------------------------
 # 2. Extract posterior samples
-# -----------------------------
 
-p <- ncol(X_test)
+n_pred <- ncol(X_test)
 J <- length(brand_levels)
 
-beta_cols <- paste0("beta[", 1:p, "]")
+beta_cols <- paste0("beta[", 1:n_pred, "]")
 alpha_cols <- paste0("alpha[", 1:J, "]")
 
 beta_samples <- sample_matrix[, beta_cols, drop = FALSE]
 alpha_samples <- sample_matrix[, alpha_cols, drop = FALSE]
 sigma_samples <- sample_matrix[, "sigma"]
 
-# -----------------------------
 # 3. Posterior predictive mean for test set
-# -----------------------------
 
 n_test <- nrow(test_data)
 n_draws <- nrow(sample_matrix)
 
-# To save memory, we calculate predictive means directly
 pred_log_price_draws <- matrix(NA, nrow = n_draws, ncol = n_test)
 
 for (s in 1:n_draws) {
   fixed_part <- as.vector(X_test %*% beta_samples[s, ])
   brand_part <- alpha_samples[s, test_data$brand_id]
   mu_centered <- brand_part + fixed_part
+    mu_log_price <- mu_centered + y_mean
   
-  # Add back y_mean to return to log(price) scale
-  mu_log_price <- mu_centered + y_mean
-  
-  # Optional: generate posterior predictive samples including residual noise
   pred_log_price_draws[s, ] <- rnorm(
     n = n_test,
     mean = mu_log_price,
@@ -1076,7 +999,6 @@ for (s in 1:n_draws) {
   )
 }
 
-# Convert back to dollar price scale
 pred_price_draws <- exp(pred_log_price_draws)
 
 # Posterior predictive mean
@@ -1086,9 +1008,7 @@ bayes_pred_price <- colMeans(pred_price_draws)
 bayes_pred_lower <- apply(pred_price_draws, 2, quantile, probs = 0.025)
 bayes_pred_upper <- apply(pred_price_draws, 2, quantile, probs = 0.975)
 
-# -----------------------------
 # 4. Bayesian model prediction metrics
-# -----------------------------
 
 actual_price <- test_data$price
 
@@ -1107,15 +1027,11 @@ cat("\nBayesian hierarchical model performance:\n")
 cat("RMSE:", bayes_rmse, "\n")
 cat("MAE :", bayes_mae, "\n")
 
-# Prediction interval coverage
 coverage_95 <- mean(actual_price >= bayes_pred_lower & actual_price <= bayes_pred_upper)
 
 cat("95% predictive interval coverage:", coverage_95, "\n")
 
-# -----------------------------
 # 5. OLS baseline model
-# -----------------------------
-# Use same fixed predictors plus brand_group as ordinary regression dummies.
 
 ols_model <- lm(
   log_price ~ z_age + z_log_mileage +
@@ -1125,7 +1041,6 @@ ols_model <- lm(
 
 ols_pred_log_price <- predict(ols_model, newdata = test_data)
 
-# Convert log prediction back to price scale
 ols_pred_price <- exp(ols_pred_log_price)
 
 ols_rmse <- rmse(actual_price, ols_pred_price)
@@ -1135,9 +1050,7 @@ cat("\nOLS model performance:\n")
 cat("RMSE:", ols_rmse, "\n")
 cat("MAE :", ols_mae, "\n")
 
-# -----------------------------
 # 6. Comparison table
-# -----------------------------
 
 comparison_table <- tibble(
   Model = c("OLS regression", "Bayesian hierarchical model"),
@@ -1149,9 +1062,7 @@ print(comparison_table)
 
 write_csv(comparison_table, p("results/prediction/model_prediction_comparison.csv"))
 
-# -----------------------------
 # 7. Save prediction results
-# -----------------------------
 
 prediction_results <- test_data %>%
   mutate(
@@ -1164,9 +1075,7 @@ prediction_results <- test_data %>%
 
 write_csv(prediction_results, p("results/prediction/used_car_prediction_results.csv"))
 
-# -----------------------------
 # 8. Basic prediction plot
-# -----------------------------
 
 pdf(p("results/prediction/actual_vs_predicted_bayes.pdf"), width = 7, height = 6)
 
@@ -1205,6 +1114,3 @@ cat("- actual_vs_predicted_bayes.pdf\n")
 cat("- actual_vs_predicted_ols.pdf\n")
 
 ```
-
-
-

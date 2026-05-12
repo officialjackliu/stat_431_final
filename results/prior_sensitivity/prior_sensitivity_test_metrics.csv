@@ -1,3 +1,3 @@
-prior,test_RMSE,test_MAE,diff_RMSE,diff_MAE
-"beta ~ N(0, 2^2) baseline",24118.0,13442.0,,
-"beta ~ N(0, 1^2) alternative",24029.0,13430.0,-89.0,-12.542
+prior,test_RMSE,test_MAE
+"beta ~ N(0, 2^2) baseline",24074.989332804904,13431.298327958373
+"beta ~ N(0, 1^2) alternative",24024.024600402696,13427.971587388645
